@@ -14,11 +14,11 @@ def xmit(url, payload, action, creds):
     headers = {'user-agent': "Steward-Magik by Operator873 operator873@gmail.com"}
 
     if action == "post":
-        r = requests.post(url, headers=headers, data=payload["payload"], auth=creds)
+        r = requests.post(url, headers=headers, data=payload, auth=creds)
     elif action == "authget":
-        r = requests.get(url, headers=headers, params=payload["payload"], auth=creds)
+        r = requests.get(url, headers=headers, params=payload, auth=creds)
     else:
-        r = requests.get(url, headers=headers, params=payload["payload"])
+        r = requests.get(url, headers=headers, params=payload)
 
     return r.json()
 
