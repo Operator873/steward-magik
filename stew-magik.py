@@ -67,9 +67,9 @@ def get_api_url(proj):
     return f"https://{lang}.{site}.org/w/api.php"
 
 
-def do_block(creds, cmd):
+def do_block(cmd):
     apiurl = get_api_url(cmd.project)
-    token = get_token(creds, 'csrf', apiurl)
+    token = get_token('csrf', apiurl)
     target = '_'.join(cmd.target)
     reason = ' '.join(cmd.reason)
     duration = ''.join(cmd.duration)
@@ -114,13 +114,13 @@ def do_block(creds, cmd):
     if cmd.test:
         print(block_request)
     else:
-        process_response(xmit(apiurl, block_request, "post", creds))
+        process_response(xmit(apiurl, block_request, "post"), cmd)
 
 
-def do_lock(creds, cmd):
+def do_lock(cmd):
     site = "https://meta.wikimedia.org/w/api.php"
 
-    token = get_token(creds, 'setglobalaccountstatus', site)
+    token = get_token('setglobalaccountstatus', site)
 
     lock = {
         "action": "setglobalaccountstatus",
@@ -134,7 +134,7 @@ def do_lock(creds, cmd):
     if cmd.test:
         print(lock)
     else:
-        data = xmit(site, lock, "post", creds)
+        data = xmit(site, lock, "post")
 
     if "error" in lock:
         print(f"""FAILED! {data["error"]["info"]}""")
@@ -144,7 +144,7 @@ def do_lock(creds, cmd):
 
 def do_gblock(creds, cmd):
     site = "https://meta.wikimedia.org/w/api.php"
-    token = get_token(creds, 'csrf', site)
+    token = get_token('csrf', site)
     target = '_'.join(cmd.target)
     reason = ' '.join(cmd.reason)
     duration = ''.join(cmd.duration)
@@ -179,17 +179,17 @@ def do_gblock(creds, cmd):
     if cmd.test:
         print(block)
     else:
-        process_response(xmit(site, block, "post", creds), cmd)
+        process_response(xmit(site, block, "post"), cmd)
 
 
-def do_mass(creds, cmd):
+def do_mass(cmd):
     pass
 
 
-def get_token(creds, token_type, url):
+def get_token(token_type, url):
     reqtoken = {"action": "query", "meta": "tokens", "format": "json", "type": token_type}
     
-    token = xmit(url, reqtoken, "authget", creds)
+    token = xmit(url, reqtoken, "authget")
 
     if "error" in token:
         print(token["error"]["info"])
@@ -264,24 +264,24 @@ def main(cmd):
         or cmd.action == "unblock"
         or cmd.action == "reblock"
     ):
-        do_block(creds, cmd)
+        do_block(cmd)
     
     elif (
         cmd.action == "lock"
         or cmd.action == "unlock"
     ):
-        do_lock(creds, cmd)
+        do_lock(cmd)
     
     elif (
         cmd.action == "gblock"
         or cmd.action == "ungblock"
         or cmd.action == "regblock"
     ):
-        do_gblock(creds, cmd)
+        do_gblock(cmd)
     
     elif cmd.action == "mass":
         if cmd.file:
-            do_mass(creds, cmd)
+            do_mass(cmd)
         else:
             print("Use the --file switch to pass a path to the file containing the targets, one per line.")
     
