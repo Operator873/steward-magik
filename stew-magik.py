@@ -71,13 +71,13 @@ def do_block(cmd):
     try:
         target = '_'.join(cmd.target)
         reason = ' '.join(cmd.reason)
-        duration = ''.join(cmd.duration)
+        duration = ''.join(cmd.duration) if cmd.action == "block" else ""
         project = cmd.project
     except TypeError:
         print(f"Blocks require target, reason, project, and duration. Supplied was: {cmd}")
         return
     
-    apiurl = get_api_url(cmd.project)
+    apiurl = get_api_url(project)
     token = get_token('csrf', apiurl)
 
     if cmd.action == "unblock":
@@ -159,7 +159,7 @@ def do_gblock(creds, cmd):
     try:
         target = '_'.join(cmd.target)
         reason = ' '.join(cmd.reason)
-        duration = ''.join(cmd.duration)
+        duration = ''.join(cmd.duration) if cmd.action == "gblock" else ""
     except TypeError:
         print(f"Global blocks require target, reason, and duration. Supplied was: {cmd}")
         return
