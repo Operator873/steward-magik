@@ -169,7 +169,8 @@ def do_gblock(creds, cmd):
     print(response)
 
 def do_test(creds, cmd):
-    pass
+    for item in cmd:
+        print(item)
 
 
 def do_mass(creds, cmd):
