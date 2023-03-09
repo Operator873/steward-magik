@@ -153,7 +153,7 @@ def do_lock(cmd):
             print(f"""{"_".join(cmd.target)} {cmd.action}ed.""")
 
 
-def do_gblock(creds, cmd):
+def do_gblock(cmd):
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token('csrf', site)
     try:
