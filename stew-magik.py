@@ -25,7 +25,7 @@ def xmit(url, payload, action, creds):
 
 def get_creds():
     config = ConfigParser()
-    config.read(f"{os.path.dirnam(__file__)}/magik.conf")
+    config.read(f"{os.path.dirname(__file__)}/magik.conf")
 
     creds = []
     for _k, value in config.items("consumer"):
