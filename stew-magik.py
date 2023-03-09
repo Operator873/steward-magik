@@ -68,11 +68,17 @@ def get_api_url(proj):
 
 
 def do_block(cmd):
+    try:
+        target = '_'.join(cmd.target)
+        reason = ' '.join(cmd.reason)
+        duration = ''.join(cmd.duration)
+        project = cmd.project
+    except TypeError:
+        print(f"Blocks require target, reason, project, and duration. Supplied was: {cmd}")
+        return
+    
     apiurl = get_api_url(cmd.project)
     token = get_token('csrf', apiurl)
-    target = '_'.join(cmd.target)
-    reason = ' '.join(cmd.reason)
-    duration = ''.join(cmd.duration)
 
     if cmd.action == "unblock":
         block_request = {
@@ -119,15 +125,20 @@ def do_block(cmd):
 
 def do_lock(cmd):
     site = "https://meta.wikimedia.org/w/api.php"
-
     token = get_token('setglobalaccountstatus', site)
+    try:
+        target = '_'.join(cmd.target)
+        reason = ' '.join(cmd.reason)
+    except TypeError:
+        print(f"Locks require target and reason. Supplied was: {cmd}")
+        return
 
     lock = {
         "action": "setglobalaccountstatus",
         "format": "json",
-        "user": "_".join(cmd.target),
+        "user": target,
         "locked": cmd.action,
-        "reason": ' '.join(cmd.reason),
+        "reason": reason,
         "token": token,
     }
 
@@ -145,9 +156,13 @@ def do_lock(cmd):
 def do_gblock(creds, cmd):
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token('csrf', site)
-    target = '_'.join(cmd.target)
-    reason = ' '.join(cmd.reason)
-    duration = ''.join(cmd.duration)
+    try:
+        target = '_'.join(cmd.target)
+        reason = ' '.join(cmd.reason)
+        duration = ''.join(cmd.duration)
+    except TypeError:
+        print(f"Global blocks require target, reason, and duration. Supplied was: {cmd}")
+        return
 
     if cmd.action == "ungblock":
         block = {
