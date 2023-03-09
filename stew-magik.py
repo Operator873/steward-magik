@@ -279,6 +279,9 @@ def main(cmd):
     ):
         do_gblock(cmd)
     
+    elif cmd.action == "test":
+        print(cmd)
+    
     elif cmd.action == "mass":
         if cmd.file:
             do_mass(cmd)
