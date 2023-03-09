@@ -300,7 +300,6 @@ if __name__ == "__main__":
     parser.add_argument(
         "action",
         help="What action to perform [(un)block, (un)lock, (un)gblock]",
-        required=True,
     )
 
     parser.add_argument(
