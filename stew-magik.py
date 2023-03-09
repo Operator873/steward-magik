@@ -60,15 +60,14 @@ def get_api_url(proj):
 
 def do_block(creds, cmd):
     apiurl = get_api_url(cmd.project)
-    target = "_".join(cmd.target)
-
     token = get_token(creds, 'csrf')
+    duration = "".join(cmd.duration)
 
     if cmd.action == "unblock":
         block_request = {
         "action": "unblock",
-        "user": cmd.target,
-        "reason": cmd.reason,
+        "user": target,
+        "reason": reason,
         "token": token,
         "format": "json",
         }
@@ -77,8 +76,8 @@ def do_block(creds, cmd):
         block_request = {
             "action": "block",
             "user": target,
-            "expiry": cmd.duration,
-            "reason": cmd.reason,
+            "expiry": duration,
+            "reason": reason,
             "token": token,
             "allowusertalk": "",
             "nocreate": "",
@@ -101,7 +100,10 @@ def do_block(creds, cmd):
         if cmd.allowcreate:
             del block_request["nocreate"]
     
-    process_response(xmit(apiurl, block_request, "post", creds))
+    if cmd.test:
+        print(block_request)
+    else:
+        process_response(xmit(apiurl, block_request, "post", creds))
 
 
 def do_lock(creds, cmd):
@@ -112,33 +114,49 @@ def do_lock(creds, cmd):
     lock = {
         "action": "setglobalaccountstatus",
         "format": "json",
-        "user": cmd.target,
+        "user": "_".join(cmd.target),
         "locked": cmd.action,
-        "reason": cmd.reason,
+        "reason": ' '.join(cmd.reason),
         "token": token,
     }
 
-    data = xmit(site, lock, "post", creds)
+    if cmd.test:
+        print(lock)
+    else:
+        data = xmit(site, lock, "post", creds)
 
     if "error" in lock:
         print(f"""FAILED! {data["error"]["info"]}""")
     else:
-        print(f"{cmd.target} {cmd.action}ed.")
+        print(f"""{"_".join(cmd.target)} {cmd.action}ed.""")
 
 
 def do_gblock(creds, cmd):
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token(creds, 'csrf')
+    target = '_'.join(cmd.target)
+    reason = ' '.join(cmd.reason)
+    duration = ''.join(cmd.duration)
 
-    block = {
-        "action": "globalblock",
-        "format": "json",
-        "target": cmd.target,
-        "expiry": cmd.duration,
-        "reason": cmd.reason,
-        "alsolocal": True,
-        "token": token,
-    }
+    if cmd.action == "ungblock":
+        block = {
+            "action": "globalblock",
+            "format": "json",
+            "token": token,
+            "reason": reason,
+            "unblock": ""
+        }
+
+    else:
+        block = {
+            "action": "globalblock",
+            "format": "json",
+            "target": target,
+            "expiry": duration,
+            "reason": reason,
+            "alsolocal": True,
+            "token": token,
+        }
 
     if cmd.anononly:
         block["anononly"] = True
@@ -147,30 +165,10 @@ def do_gblock(creds, cmd):
     if cmd.force:
         block["modify"] = True
     
-    gblock = xmit(site, block, "post", creds)
-
-    if "error" in gblock:
-        failure = gblock["error"]["globalblock"][0]
-        if failure["code"] == "globalblocking-block-alreadyblocked":
-            response = "The target is already blocked."
-        else:
-            response = "Block failed! " + str(failure["message"])
-    elif "block" in gblock or "globalblock" in gblock:
-        expiry = gblock["globalblock"]["expiry"]
-        if cmd.force:
-            response = "Block was modified. New expiry: " + expiry
-        elif "anononly" in block:
-            response = "Anon-only block succeeded. Expiry: " + expiry
-        else:
-            response = "Block succeeded. Expiry: " + expiry
+    if cmd.test:
+        print(block)
     else:
-        response = "Unknown failure... " + gblock
-    
-    print(response)
-
-def do_test(creds, cmd):
-    for item in cmd:
-        print(item)
+        process_response(xmit(site, block, "post", creds), cmd)
 
 
 def do_mass(creds, cmd):
@@ -281,9 +279,6 @@ def main(cmd):
     ):
         do_gblock(creds, cmd)
     
-    elif cmd.action == "test":
-        do_test(creds, cmd)
-    
     elif cmd.action == "mass":
         if cmd.file:
             do_mass(creds, cmd)
@@ -372,6 +367,14 @@ if __name__ == "__main__":
         const=True,
         nargs="?",
         metavar="",
+    )
+
+    parser.add_argument(
+        "--test",
+        "--dryrun",
+        help="Don't actually send anything, just show the query that would be sent.",
+        const=True,
+        nargs="?",
     )
 
     args = parser.parse_args()
