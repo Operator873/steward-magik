@@ -1,14 +1,11 @@
 #!/usr/bin/env python3
 
 import os
-from time import time
 import requests
 from requests_oauthlib import OAuth1
 from argparse import ArgumentParser
 from configparser import ConfigParser
 
-
-ACCOUNT = "yourUserAccount"
 
 def xmit(url, payload, action):
     headers = {'user-agent': "Steward-Magik by Operator873 operator873@gmail.com"}
@@ -21,7 +18,11 @@ def xmit(url, payload, action):
     else:
         r = requests.get(url, headers=headers, params=payload)
 
-    return r.json()
+    if r.ok:
+        return r.json()
+    else:
+        print(r)
+        SystemExit
 
 
 def get_creds():
@@ -118,6 +119,7 @@ def do_block(cmd):
             del block_request["nocreate"]
     
     if cmd.test:
+        print(apiurl)
         print(block_request)
     else:
         process_response(xmit(apiurl, block_request, "post"), cmd)
@@ -143,6 +145,7 @@ def do_lock(cmd):
     }
 
     if cmd.test:
+        print(site)
         print(lock)
     else:
         data = xmit(site, lock, "post")
@@ -192,6 +195,7 @@ def do_gblock(cmd):
         block["modify"] = True
     
     if cmd.test:
+        print(site)
         print(block)
     else:
         process_response(xmit(site, block, "post"), cmd)
