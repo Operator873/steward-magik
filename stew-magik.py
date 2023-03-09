@@ -271,9 +271,9 @@ def process_response(data, cmd):
 def main(cmd):
     # Check to see if configuration exists
     home_path = os.path.expanduser("~")
-    if not os.path.exists(f"{home_path}/magik.conf"):
-        print("This tool requires the magik.conf file to be edited and saved in your home directory as '.magik'")
-        SystemExit
+    if not os.path.exists(f"{home_path}/.magik"):
+        print("You are not currently configured. Please run ./stew-magik.py configure")
+        return
 
     if (
         cmd.action == "block"
