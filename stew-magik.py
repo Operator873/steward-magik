@@ -136,10 +136,10 @@ def do_lock(cmd):
     else:
         data = xmit(site, lock, "post")
 
-    if "error" in lock:
-        print(f"""FAILED! {data["error"]["info"]}""")
-    else:
-        print(f"""{"_".join(cmd.target)} {cmd.action}ed.""")
+        if "error" in lock:
+            print(f"""FAILED! {data["error"]["info"]}""")
+        else:
+            print(f"""{"_".join(cmd.target)} {cmd.action}ed.""")
 
 
 def do_gblock(creds, cmd):
