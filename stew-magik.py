@@ -258,6 +258,8 @@ def main(cmd):
     ):
         print("It seems like maybe you haven't configured your consumer information. See https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration")
         SystemExit
+    else:
+        creds = OAuth1(creds)
 
     if (
         cmd.action == "block"
