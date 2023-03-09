@@ -1,4 +1,3 @@
-import re
 import os
 from time import time
 import requests
@@ -24,7 +23,7 @@ def xmit(url, payload, action, creds):
 
 def get_creds():
     config = ConfigParser()
-    config.read(f"{os.path.dirnam(__file__)}/my.conf")
+    config.read(f"{os.path.dirnam(__file__)}/magik.conf")
 
     creds = []
     for _k, value in config.items("consumer"):
