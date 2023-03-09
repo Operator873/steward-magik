@@ -10,8 +10,9 @@ from configparser import ConfigParser
 
 ACCOUNT = "yourUserAccount"
 
-def xmit(url, payload, action, creds):
+def xmit(url, payload, action):
     headers = {'user-agent': "Steward-Magik by Operator873 operator873@gmail.com"}
+    creds = get_creds()
 
     if action == "post":
         r = requests.post(url, headers=headers, data=payload, auth=creds)
@@ -31,7 +32,15 @@ def get_creds():
     for _k, value in config.items("consumer"):
         creds.append(value)
 
-    return tuple(creds)
+    not_set = ['a', 'b', 'c', 'd']
+
+    if any(i in not_set for i in creds):
+        print("It seems like maybe you haven't configured your consumer information. See https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration")
+        SystemExit
+    
+    result = OAuth1(creds[0], creds[1], creds[2], creds[3])
+
+    return result
     
 
 def get_api_url(proj):
@@ -61,7 +70,9 @@ def get_api_url(proj):
 def do_block(creds, cmd):
     apiurl = get_api_url(cmd.project)
     token = get_token(creds, 'csrf', apiurl)
-    duration = "".join(cmd.duration)
+    target = '_'.join(cmd.target)
+    reason = ' '.join(cmd.reason)
+    duration = ''.join(cmd.duration)
 
     if cmd.action == "unblock":
         block_request = {
@@ -247,19 +258,6 @@ def main(cmd):
     if not os.path.exists(f"{os.getcwd()}/magik.conf"):
         print("The magik.conf file is missing and should have been pulled with the package. Please do 'git pull' again.")
         SystemExit
-    
-    # Make sure the config file has been updated
-    creds = get_creds()
-    if (
-        "a" in creds
-        or "b" in creds
-        or "c" in creds
-        or "d" in creds
-    ):
-        print("It seems like maybe you haven't configured your consumer information. See https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration")
-        SystemExit
-    else:
-        creds = OAuth1(creds)
 
     if (
         cmd.action == "block"
