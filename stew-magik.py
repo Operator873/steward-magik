@@ -60,7 +60,7 @@ def get_api_url(proj):
 
 def do_block(creds, cmd):
     apiurl = get_api_url(cmd.project)
-    token = get_token(creds, 'csrf')
+    token = get_token(creds, 'csrf', apiurl)
     duration = "".join(cmd.duration)
 
     if cmd.action == "unblock":
@@ -109,7 +109,7 @@ def do_block(creds, cmd):
 def do_lock(creds, cmd):
     site = "https://meta.wikimedia.org/w/api.php"
 
-    token = get_token(creds, 'setglobalaccountstatus')
+    token = get_token(creds, 'setglobalaccountstatus', site)
 
     lock = {
         "action": "setglobalaccountstatus",
@@ -133,7 +133,7 @@ def do_lock(creds, cmd):
 
 def do_gblock(creds, cmd):
     site = "https://meta.wikimedia.org/w/api.php"
-    token = get_token(creds, 'csrf')
+    token = get_token(creds, 'csrf', site)
     target = '_'.join(cmd.target)
     reason = ' '.join(cmd.reason)
     duration = ''.join(cmd.duration)
