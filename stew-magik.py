@@ -26,7 +26,7 @@ def xmit(url, payload, action):
 
 def get_creds():
     config = ConfigParser()
-    config.read(f"{os.path.dirname(__file__)}/magik.conf")
+    config.read(f"""{os.path.expanduser("~")}/.magik""")
 
     creds = []
     for _k, value in config.items("consumer"):
@@ -255,8 +255,9 @@ def process_response(data, cmd):
 
 def main(cmd):
     # Check to see if configuration exists
-    if not os.path.exists(f"{os.getcwd()}/magik.conf"):
-        print("The magik.conf file is missing and should have been pulled with the package. Please do 'git pull' again.")
+    home_path = os.path.expanduser("~")
+    if not os.path.exists(f"{home_path}/magik.conf"):
+        print("This tool requires the magik.conf file to be edited and saved in your home directory as '.magik'")
         SystemExit
 
     if (
