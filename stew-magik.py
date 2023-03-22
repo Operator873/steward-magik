@@ -161,7 +161,7 @@ def do_gblock(cmd):
     token = get_token('csrf', site)
     try:
         target = '_'.join(cmd.target)
-        reason = ' '.join(cmd.reason)
+        reason = process_reason(' '.join(cmd.reason))
         duration = ''.join(cmd.duration) if cmd.action == "gblock" else ""
     except TypeError:
         print(f"Global blocks require target, reason, and duration. Supplied was: {cmd}")
@@ -271,6 +271,17 @@ def process_response(data, cmd):
             print(response)
 
 
+def process_reason(reason):
+    if reason == "proxy":
+        return "[[m:Special:MyLanguage/NOP|Open proxy]]: See the [[m:WM:OP/H|help page]] if you are affected"
+    elif reason == "lta":
+        return "Long term abuse"
+    elif reason == "spambot":
+        return "Cross-wiki spam: spambot"
+    elif reason == "spam":
+        return "Cross-wiki spam"
+    else:
+        return reason
 
 def main(cmd):
     # Check to see if configuration exists
