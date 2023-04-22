@@ -274,6 +274,12 @@ def process_response(data, cmd):
 def process_reason(reason):
     if reason == "proxy":
         return "[[m:Special:MyLanguage/NOP|Open proxy]]: See the [[m:WM:OP/H|help page]] if you are affected"
+    elif reason.startswith("webhost"):
+        try:
+            _c, msg = reason.split(" ", 1)
+        except ValueError:
+            msg = ""
+        return f"[[m:Special:MyLanguage/NOP|Open proxy/Webhost]]: See the [[m:WM:OP/H|help page]] if you are affected: {msg}"
     elif reason == "lta":
         return "Long term abuse"
     elif reason == "spambot":
