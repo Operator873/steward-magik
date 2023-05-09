@@ -7,6 +7,7 @@ from argparse import ArgumentParser
 from configparser import ConfigParser
 
 
+# This is a requests wrapper to make life easier
 def xmit(url, payload, action):
     headers = {'user-agent': "Steward-Magik by Operator873 operator873@gmail.com"}
     creds = get_creds()
@@ -25,16 +26,21 @@ def xmit(url, payload, action):
         SystemExit
 
 
+# Check the file is renamed and contains the appropriate information
 def get_creds():
     config = ConfigParser()
     config.read(f"""{os.path.expanduser("~")}/.magik""")
 
+    # Glob up consumer tokens, disregard the key and add the values
     creds = []
     for _k, value in config.items("consumer"):
         creds.append(value)
 
     not_set = ['a', 'b', 'c', 'd']
 
+    # Check each of the stored creds against what the repo ships with to see if the user didn't follow directions
+    # Because users do that
+    # A lot
     if any(i in not_set for i in creds):
         print("It seems like maybe you haven't configured your consumer information. See https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration")
         SystemExit
@@ -44,7 +50,9 @@ def get_creds():
     return result
     
 
+# A devilishly smart way of figuring out which API to use
 def get_api_url(proj):
+    # Look for "wik" to split on
     try:
         lang, site = proj.replace("wik", "+wik").split("+")
     except ValueError:
@@ -56,18 +64,21 @@ def get_api_url(proj):
             print(f"Error processing {proj}. Try things like 'enwiki' or 'meta'.")
             SystemExit
 
+    # Why does meta have to be so different?
     if site == "wiki":
         if lang == "meta":
             site = "wikimedia"
         else:
             site = "wikipedia"
     
+    # Wiktionary
     if site == "wikt":
         site = "wiktionary"
     
     return f"https://{lang}.{site}.org/w/api.php"
 
 
+# with the information in hand, process a block
 def do_block(cmd):
     try:
         target = '_'.join(cmd.target)
@@ -125,6 +136,7 @@ def do_block(cmd):
         process_response(xmit(apiurl, block_request, "post"), cmd)
 
 
+# Process a lock with the supplied information
 def do_lock(cmd):
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token('setglobalaccountstatus', site)
@@ -156,6 +168,7 @@ def do_lock(cmd):
             print(f"""{"_".join(cmd.target)} {cmd.action}ed.""")
 
 
+# Do a global block with the supplied information
 def do_gblock(cmd):
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token('csrf', site)
@@ -201,10 +214,12 @@ def do_gblock(cmd):
         process_response(xmit(site, block, "post"), cmd)
 
 
+# Feature in development
 def do_mass(cmd):
     pass
 
 
+# Tokens are needed as part of authentication process. Handle them all here
 def get_token(token_type, url):
     reqtoken = {"action": "query", "meta": "tokens", "format": "json", "type": token_type}
     
@@ -217,6 +232,7 @@ def get_token(token_type, url):
         return token["query"]["tokens"]["%stoken" % token_type]
 
 
+# Clean up the API response from mediawiki and parse the output for human readability
 def process_response(data, cmd):
     if "block" in data:
         print(f"""{data["block"]["user"]} was blocked until {data["block"]["expiry"]} with reason: {data["block"]["reason"]}""")
@@ -271,6 +287,7 @@ def process_response(data, cmd):
             print(response)
 
 
+# Create some short cuts that can be passed with --reason
 def process_reason(reason):
     if reason == "proxy":
         return "[[m:Special:MyLanguage/NOP|Open proxy]]: See the [[m:WM:OP/H|help page]] if you are affected"
@@ -289,13 +306,18 @@ def process_reason(reason):
     else:
         return reason
 
+
+# Decide what to do based on what switches were applied
 def main(cmd):
     # Check to see if configuration exists
     home_path = os.path.expanduser("~")
+    
+    # First attempt at user-proofing
     if not os.path.exists(f"{home_path}/.magik"):
         print("You are not currently configured. Please run ./stew-magik.py configure")
         return
 
+    # If we are doing local project specific blocks, use do_block
     if (
         cmd.action == "block"
         or cmd.action == "unblock"
@@ -303,12 +325,14 @@ def main(cmd):
     ):
         do_block(cmd)
     
+    # If we are doing Steward Locks, do_lock
     elif (
         cmd.action == "lock"
         or cmd.action == "unlock"
     ):
         do_lock(cmd)
     
+    # If we are doing Steward Global Blocks, do_gblock
     elif (
         cmd.action == "gblock"
         or cmd.action == "ungblock"
@@ -316,20 +340,26 @@ def main(cmd):
     ):
         do_gblock(cmd)
     
+    # Handle a dryrun or test switch by just coughing out the cmd
     elif cmd.action == "test":
         print(cmd)
     
+    # Feature in development
+    # Doesn't work yet
     elif cmd.action == "mass":
         if cmd.file:
             do_mass(cmd)
         else:
             print("Use the --file switch to pass a path to the file containing the targets, one per line.")
     
+    # Users will be users
     else:
         print(f"I don't know how to '{cmd.action}'")
 
 
+# Make sure this is not being called by somethign else
 if __name__ == "__main__":
+    # Build the arg parser
     parser = ArgumentParser()
 
     parser.add_argument(
@@ -419,4 +449,5 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    # Lets get started
     main(args)
