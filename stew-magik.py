@@ -342,7 +342,9 @@ def main(cmd):
     
     # Handle a dryrun or test switch by just coughing out the cmd
     elif cmd.action == "test":
-        print(cmd)
+        list_of_nicks = cmd.target.split(',')
+        for nick in list_of_nicks:
+            print(f"{nick}: {cmd.reason}")
     
     # Feature in development
     # Doesn't work yet
@@ -365,6 +367,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "action",
         help="What action to perform [(un)block, (un)lock, (un)gblock]",
+        choices=['block', 'unblock', 'reblock', 'gblock', 'ungblock', 'regblock', 'lock', 'unlock']
     )
 
     parser.add_argument(
