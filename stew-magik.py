@@ -173,7 +173,7 @@ def do_lock(target, cmd):
         if "error" in data:
             print(f"""FAILED! {data["error"]["info"]}""")
         else:
-            print(f"""{"_".join(cmd.target)} {cmd.action}ed.""")
+            print(f"""{"_".join(target)} {cmd.action}ed.""")
 
 
 # Do a global block with the supplied information
