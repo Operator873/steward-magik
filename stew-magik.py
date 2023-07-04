@@ -9,6 +9,8 @@ from configparser import ConfigParser
 
 # This is a requests wrapper to make life easier
 def xmit(url, payload, action):
+    # Headers let the server owners know who's responsible for the misery the API endures
+    # Provide contact info and such
     headers = {'user-agent': "Steward-Magik by Operator873 operator873@gmail.com"}
     creds = get_creds()
 
@@ -23,7 +25,7 @@ def xmit(url, payload, action):
         return r.json()
     else:
         print(r)
-        SystemExit
+        raise SystemExit()
 
 
 # Check the file is renamed and contains the appropriate information
@@ -43,7 +45,7 @@ def get_creds():
     # A lot
     if any(i in not_set for i in creds):
         print("It seems like maybe you haven't configured your consumer information. See https://meta.wikimedia.org/wiki/Special:OAuthConsumerRegistration")
-        SystemExit
+        raise SystemExit()
     
     result = OAuth1(creds[0], creds[1], creds[2], creds[3])
 
@@ -62,7 +64,7 @@ def get_api_url(proj):
             lang, site = ("meta", "wikimedia")
         else:
             print(f"Error processing {proj}. Try things like 'enwiki' or 'meta'.")
-            SystemExit
+            raise SystemExit()
 
     # Why does meta have to be so different?
     if site == "wiki":
@@ -79,16 +81,17 @@ def get_api_url(proj):
 
 
 # with the information in hand, process a block
-def do_block(cmd):
+def do_block(target, cmd):
     try:
-        target = '_'.join(cmd.target)
+        target = '_'.join(target)
         reason = ' '.join(cmd.reason)
         duration = ''.join(cmd.duration) if cmd.action == "block" else ""
         project = cmd.project
     except TypeError:
-        print(f"Blocks require target, reason, project, and duration. Supplied was: {cmd}")
+        print(f"Blocks require target, reason, project, and duration. Supplied was:\n{cmd}")
         return
     
+    # cleverly split up shorthand project into an API address
     apiurl = get_api_url(project)
     token = get_token('csrf', apiurl)
 
@@ -129,6 +132,7 @@ def do_block(cmd):
         if cmd.allowcreate:
             del block_request["nocreate"]
     
+    # If this is a dryrun, don't actually do it
     if cmd.test:
         print(apiurl)
         print(block_request)
@@ -137,16 +141,18 @@ def do_block(cmd):
 
 
 # Process a lock with the supplied information
-def do_lock(cmd):
+def do_lock(target, cmd):
+    # Site up some variables first
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token('setglobalaccountstatus', site)
     try:
-        target = '_'.join(cmd.target)
+        target = '_'.join(target)
         reason = ' '.join(cmd.reason)
     except TypeError:
         print(f"Locks require target and reason. Supplied was: {cmd}")
         return
 
+    # Lock payload is straight forward
     lock = {
         "action": "setglobalaccountstatus",
         "format": "json",
@@ -156,12 +162,14 @@ def do_lock(cmd):
         "token": token,
     }
 
+    # If this is a dryrun, don't actually do it
     if cmd.test:
         print(site)
         print(lock)
     else:
         data = xmit(site, lock, "post")
 
+        # Handle error or success
         if "error" in data:
             print(f"""FAILED! {data["error"]["info"]}""")
         else:
@@ -169,11 +177,12 @@ def do_lock(cmd):
 
 
 # Do a global block with the supplied information
-def do_gblock(cmd):
+def do_gblock(target, cmd):
+    # Do some setup work
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token('csrf', site)
     try:
-        target = '_'.join(cmd.target)
+        target = '_'.join(target)
         reason = process_reason(' '.join(cmd.reason))
         duration = ''.join(cmd.duration) if cmd.action == "gblock" else ""
     except TypeError:
@@ -181,11 +190,14 @@ def do_gblock(cmd):
         return
 
     if cmd.action == "ungblock":
+        # The payload is different depending on the action
         block = {
             "action": "globalblock",
             "format": "json",
+            "target": target,
             "token": token,
             "reason": reason,
+            "alsolocal": True,
             "unblock": ""
         }
 
@@ -200,23 +212,21 @@ def do_gblock(cmd):
             "token": token,
         }
 
+    # Check for and handle anononly
     if cmd.anononly:
         block["anononly"] = True
         block["localanononly"] = True
     
+    # Check for and handle force or reblock
     if cmd.force:
         block["modify"] = True
     
+    # If this is a dryrun, don't actually do it
     if cmd.test:
         print(site)
         print(block)
     else:
         process_response(xmit(site, block, "post"), cmd)
-
-
-# Feature in development
-def do_mass(cmd):
-    pass
 
 
 # Tokens are needed as part of authentication process. Handle them all here
@@ -227,7 +237,7 @@ def get_token(token_type, url):
 
     if "error" in token:
         print(token["error"]["info"])
-        SystemExit
+        raise SystemExit()
     else:
         return token["query"]["tokens"]["%stoken" % token_type]
 
@@ -235,24 +245,36 @@ def get_token(token_type, url):
 # Clean up the API response from mediawiki and parse the output for human readability
 def process_response(data, cmd):
     if "block" in data:
+        # A succesful block occurred
         print(f"""{data["block"]["user"]} was blocked until {data["block"]["expiry"]} with reason: {data["block"]["reason"]}""")
     
     if "unblock" in data:
+        # A successful unblock
         user = data["unblock"]["user"]
         reason = data["unblock"]["reason"]
         print(f"{user} was unblocked with reason: {reason}")
 
     if "globalblock" in data:
-        expiry = data["globalblock"]["expiry"]
-        if cmd.force:
-            print(f"Global block was modified! New expiry: {expiry}")
-        elif cmd.anononly:
-            print(f"Anon-only global block succeeded. Expiry: {expiry}")
+        # Successful gblock
+        # {'globalblock': {'blockedlocally': '', 'user': 'ip.add.re.ss', 'blocked': '', 'expiry': '2023-07-04T08:04:36Z'}}
+        # Successful ungblock
+        # {'globalblock': {'user': 'ip.add.re.ss', 'unblocked': ''}}
+        if "expiry" in data["globalblock"]:
+            expiry = data["globalblock"]["expiry"]
+            if cmd.force:
+                print(f"Global block was modified! New expiry: {expiry}")
+            elif cmd.anononly:
+                print(f"Anon-only global block succeeded. Expiry: {expiry}")
+            else:
+                print(f"Global block succeeded. Expiry: {expiry}")
         else:
-            print(F"Block succeeded. Expiry: {expiry}")
+            if "unblocked" in data["globalblock"]:
+                print(f"{data['globalblock']['user']} was globally unblocked.")
 
     if "error" in data:
+        # An error occurred during the API interactions
         if "globalblock" in data["error"]:
+            # Global block erros don't really have much info to parse
             failure = data["error"]["globalblock"][0]
             if failure["code"] == "globalblocking-block-alreadyblocked":
                 print("The target is already blocked.")
@@ -260,6 +282,7 @@ def process_response(data, cmd):
                 print(f"""Block failed! {failure["message"]}""")
         
         else:
+            # ALl others have rich information to parse
             reason = data["error"]["code"]
             if reason == "badtoken":
                 response = "Received CSRF token error. Try again..."
@@ -310,11 +333,8 @@ def process_reason(reason):
 # Decide what to do based on what switches were applied
 def main(cmd):
     # Check to see if configuration exists
-    home_path = os.path.expanduser("~")
-    
-    # First attempt at user-proofing
-    if not os.path.exists(f"{home_path}/.magik"):
-        print("You are not currently configured. Please run ./stew-magik.py configure")
+    if not os.path.exists(os.path.expanduser("~/.magik")):
+        print("You are not currently configured. Check the 'magik.conf' file for instructions.")
         return
 
     # If we are doing local project specific blocks, use do_block
@@ -323,14 +343,16 @@ def main(cmd):
         or cmd.action == "unblock"
         or cmd.action == "reblock"
     ):
-        do_block(cmd)
+        for t in cmd.target:
+            do_block(t, cmd)
     
     # If we are doing Steward Locks, do_lock
     elif (
         cmd.action == "lock"
         or cmd.action == "unlock"
     ):
-        do_lock(cmd)
+        for t in cmd.target:
+            do_lock(t, cmd)
     
     # If we are doing Steward Global Blocks, do_gblock
     elif (
@@ -338,7 +360,8 @@ def main(cmd):
         or cmd.action == "ungblock"
         or cmd.action == "regblock"
     ):
-        do_gblock(cmd)
+        for t in cmd.target:
+            do_gblock(t, cmd)
     
     # Handle a dryrun or test switch by just coughing out the cmd
     elif cmd.action == "test":
@@ -346,20 +369,12 @@ def main(cmd):
         for nick in list_of_nicks:
             print(f"{nick}: {cmd.reason}")
     
-    # Feature in development
-    # Doesn't work yet
-    elif cmd.action == "mass":
-        if cmd.file:
-            do_mass(cmd)
-        else:
-            print("Use the --file switch to pass a path to the file containing the targets, one per line.")
-    
     # Users will be users
     else:
         print(f"I don't know how to '{cmd.action}'")
 
 
-# Make sure this is not being called by somethign else
+# Make sure this is not being called by something else
 if __name__ == "__main__":
     # Build the arg parser
     parser = ArgumentParser()
@@ -367,14 +382,15 @@ if __name__ == "__main__":
     parser.add_argument(
         "action",
         help="What action to perform [(un)block, (un)lock, (un)gblock]",
-        choices=['block', 'unblock', 'reblock', 'gblock', 'ungblock', 'regblock', 'lock', 'unlock']
+        choices=['block', 'unblock', 'reblock', 'gblock', 'ungblock', 'regblock', 'lock', 'unlock', 'test']
     )
 
     parser.add_argument(
         "-t",
         "--target",
+        action='append',
         nargs="+",
-        help="The target of the operation",
+        help="The target of the operation. Can be used multiple times in the same command (multiple targets, same block).",
     )
     
     parser.add_argument(
