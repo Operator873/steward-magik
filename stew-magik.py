@@ -197,7 +197,6 @@ def do_gblock(target, cmd):
             "target": target,
             "token": token,
             "reason": reason,
-            "alsolocal": True,
             "unblock": ""
         }
 
