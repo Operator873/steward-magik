@@ -335,6 +335,10 @@ def main(cmd):
     if not os.path.exists(os.path.expanduser("~/.magik")):
         print("You are not currently configured. Check the 'magik.conf' file for instructions.")
         return
+    
+    # Handle a personal habit of mine
+    if cmd.duration == "forever":
+        cmd.duration = "infinite"
 
     # If we are doing local project specific blocks, use do_block
     if (
