@@ -338,7 +338,7 @@ def main(cmd):
     
     # Handle a personal habit of mine
     if cmd.duration == "forever":
-        cmd.duration = "never"
+        cmd.duration = "indefinite"
 
     # If we are doing local project specific blocks, use do_block
     if (
