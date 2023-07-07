@@ -148,7 +148,6 @@ def do_lock(target, cmd):
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token("setglobalaccountstatus", site)
     try:
-        target = "_".join(target)
         reason = " ".join(cmd.reason)
     except TypeError:
         print(f"Locks require target and reason. Supplied was: {cmd}")
@@ -369,7 +368,7 @@ def main(cmd):
         # Handle a personal habit of mine
         if "forever" in cmd.duration:
             cmd.duration = ["indefinite"]
-            
+
         for t in cmd.target:
             do_gblock(t, cmd)
 
