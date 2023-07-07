@@ -348,13 +348,14 @@ def main(cmd):
             "You are not currently configured. Check the 'magik.conf' file for instructions."
         )
         return
-
-    # Handle a personal habit of mine
-    if "forever" in cmd.duration:
-        cmd.duration = ["indefinite"]
+    
 
     # If we are doing local project specific blocks, use do_block
     if cmd.action == "block" or cmd.action == "unblock" or cmd.action == "reblock":
+        # Handle a personal habit of mine
+        if "forever" in cmd.duration:
+            cmd.duration = ["indefinite"]
+
         for t in cmd.target:
             do_block(t, cmd)
 
@@ -365,6 +366,10 @@ def main(cmd):
 
     # If we are doing Steward Global Blocks, do_gblock
     elif cmd.action == "gblock" or cmd.action == "ungblock" or cmd.action == "regblock":
+        # Handle a personal habit of mine
+        if "forever" in cmd.duration:
+            cmd.duration = ["indefinite"]
+            
         for t in cmd.target:
             do_gblock(t, cmd)
 
