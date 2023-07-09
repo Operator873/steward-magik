@@ -143,11 +143,12 @@ def do_block(target, cmd):
 
 
 # Process a lock with the supplied information
-def do_lock(target, cmd):
+def do_lock(user, cmd):
     # Site up some variables first
     site = "https://meta.wikimedia.org/w/api.php"
     token = get_token("setglobalaccountstatus", site)
     try:
+        target = "_".join(user)
         reason = " ".join(cmd.reason)
     except TypeError:
         print(f"Locks require target and reason. Supplied was: {cmd}")
