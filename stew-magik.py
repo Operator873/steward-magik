@@ -87,7 +87,7 @@ def get_api_url(proj):
 def do_block(target, cmd):
     try:
         target = "_".join(target)
-        reason = " ".join(cmd.reason)
+        reason = process_reason(" ".join(cmd.reason))
         duration = "".join(cmd.duration) if cmd.action == "block" else ""
         project = cmd.project
     except TypeError:
@@ -149,7 +149,7 @@ def do_lock(user, cmd):
     token = get_token("setglobalaccountstatus", site)
     try:
         target = "_".join(user)
-        reason = " ".join(cmd.reason)
+        reason = process_reason(" ".join(cmd.reason))
     except TypeError:
         print(f"Locks require target and reason. Supplied was: {cmd}")
         return
@@ -261,7 +261,7 @@ def process_response(data, cmd):
     if "unblock" in data:
         # A successful unblock
         user = data["unblock"]["user"]
-        reason = data["unblock"]["reason"]
+        reason = process_reason(data["unblock"]["reason"])
         print(f"{user} was unblocked with reason: {reason}")
 
     if "globalblock" in data:
