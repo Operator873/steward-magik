@@ -298,8 +298,8 @@ def process_response(data, cmd):
                 response = "Received CSRF token error. Try again..."
             elif reason == "alreadyblocked":
                 response = (
-                    data["target"]
-                    + " is already blocked. Use reblock or --force to change the current block."
+                    data["info"]
+                    + " Use reblock or --force to change the current block."
                 )
             elif reason == "permissiondenied":
                 response = (
