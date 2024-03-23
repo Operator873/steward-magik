@@ -297,14 +297,15 @@ def process_response(data, cmd):
             if reason == "badtoken":
                 response = "Received CSRF token error. Try again..."
             elif reason == "alreadyblocked":
+                print()
                 response = (
-                    data["info"]
+                    data["error"]["info"]
                     + " Use reblock or --force to change the current block."
                 )
             elif reason == "permissiondenied":
                 response = (
                     "Received permission denied error. Are you a sysop on "
-                    + data["project"]
+                    + data["error"]["project"]
                     + "?"
                 )
             elif reason == "invalidexpiry":
