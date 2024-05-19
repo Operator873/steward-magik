@@ -164,6 +164,13 @@ def do_lock(user, cmd):
         "token": token,
     }
 
+    if cmd.action == "lock":
+        if cmd.hidden:
+            lock['hidden'] = "lists"
+        
+        if cmd.suppress:
+            lock['hidden'] = "suppressed"
+
     # If this is a dryrun, don't actually do it
     if cmd.test:
         print(site)
@@ -485,6 +492,20 @@ if __name__ == "__main__":
         "--test",
         "--dryrun",
         help="Don't actually send anything, just show the query that would be sent.",
+        const=True,
+        nargs="?",
+    )
+
+    parser.add_argument(
+        "--hidden",
+        help="Hide the locked account from global user lists.",
+        const=True,
+        nargs="?",
+    )
+
+    parser.add_argument(
+        "--suppressed",
+        help="Suppress the locked account name.",
         const=True,
         nargs="?",
     )
