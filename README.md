@@ -11,7 +11,7 @@ A pure Python (3.6+) script for doing sysopy/stewy things from your computer via
    2. For Windohs systems  
    ```python C:\path\to\stew-magik.py --help```
 
-### >>> Protip2
+### >>> Protips
 1. If you're using a unix-y system, create a soft link into your `/usr/local/bin` directory like this:  
 `sudo ln -s /path/to/stew-magik.py /usr/local/bin/magik`
 
