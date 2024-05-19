@@ -372,6 +372,10 @@ def main(cmd):
 
     # If we are doing Steward Locks, do_lock
     elif cmd.action == "lock" or cmd.action == "unlock":
+        if (cmd.hide or cmd.suppress) and cmd.unhide:
+            print("Both hide/suppress and unhide was indicated. Which is it?")
+            return
+        
         for t in cmd.target:
             do_lock(t, cmd)
 
