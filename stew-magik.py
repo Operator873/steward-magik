@@ -354,7 +354,7 @@ def main(cmd):
     # If we are doing local project specific blocks, use do_block
     if cmd.action == "block" or cmd.action == "unblock" or cmd.action == "reblock":
         # Handle a personal habit of mine
-        if "forever" in cmd.duration:
+        if cmd.action != "unblock" and "forever" in cmd.duration:
             cmd.duration = ["indefinite"]
 
         for t in cmd.target:
@@ -368,7 +368,7 @@ def main(cmd):
     # If we are doing Steward Global Blocks, do_gblock
     elif cmd.action == "gblock" or cmd.action == "ungblock" or cmd.action == "regblock":
         # Handle a personal habit of mine
-        if "forever" in cmd.duration:
+        if cmd.action != "ungblock" and "forever" in cmd.duration:
             cmd.duration = ["indefinite"]
 
         for t in cmd.target:
