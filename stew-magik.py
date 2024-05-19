@@ -172,7 +172,7 @@ def do_lock(user, cmd):
             lock["hidden"] = "suppressed"
     
     if cmd.unhide:
-        lock["hidden"] = ""
+        lock["hidden"] = None
 
     # If this is a dryrun, don't actually do it
     if cmd.test:
