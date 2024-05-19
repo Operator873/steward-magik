@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import json
 from argparse import ArgumentParser
 from configparser import ConfigParser
 
@@ -170,7 +171,7 @@ def do_lock(user, cmd):
 
         if cmd.suppress:
             lock["hidden"] = "suppressed"
-    
+
     if cmd.unhide:
         lock["hidden"] = None
 
@@ -262,6 +263,8 @@ def get_token(token_type, url):
 
 # Clean up the API response from mediawiki and parse the output for human readability
 def process_response(data, cmd):
+    if cmd.debug:
+        print(json.dumps(data, indent=2))
     if "block" in data:
         # A succesful block occurred
         print(
@@ -375,7 +378,7 @@ def main(cmd):
         if (cmd.hide or cmd.suppress) and cmd.unhide:
             print("Both hide/suppress and unhide was indicated. Which is it?")
             return
-        
+
         for t in cmd.target:
             do_lock(t, cmd)
 
@@ -524,6 +527,14 @@ if __name__ == "__main__":
         "--unhide",
         "--unsuppress",
         help="Remove hide/suppress from an account.",
+        const=True,
+        nargs="?",
+        default=False,
+    )
+
+    parser.add_argument(
+        "--debug",
+        help="Show whole API response in pretty format.",
         const=True,
         nargs="?",
         default=False,
