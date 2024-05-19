@@ -165,10 +165,10 @@ def do_lock(user, cmd):
     }
 
     if cmd.action == "lock":
-        if cmd.hidden:
+        if hasattr(cmd, "hide"):
             lock['hidden'] = "lists"
         
-        if cmd.suppress:
+        if hasattr(cmd, "suppress"):
             lock['hidden'] = "suppressed"
 
     # If this is a dryrun, don't actually do it
@@ -497,6 +497,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--hide",
         "--hidden",
         help="Hide the locked account from global user lists.",
         const=True,
@@ -504,6 +505,7 @@ if __name__ == "__main__":
     )
 
     parser.add_argument(
+        "--suppress",
         "--suppressed",
         help="Suppress the locked account name.",
         const=True,
