@@ -166,10 +166,13 @@ def do_lock(user, cmd):
 
     if cmd.action == "lock":
         if cmd.hide:
-            lock['hidden'] = "lists"
-        
+            lock["hidden"] = "lists"
+
         if cmd.suppress:
-            lock['hidden'] = "suppressed"
+            lock["hidden"] = "suppressed"
+    
+    if cmd.unhide:
+        lock["hidden"] = ""
 
     # If this is a dryrun, don't actually do it
     if cmd.test:
@@ -356,7 +359,6 @@ def main(cmd):
             "You are not currently configured. Check the 'magik.conf' file for instructions."
         )
         return
-    
 
     # If we are doing local project specific blocks, use do_block
     if cmd.action == "block" or cmd.action == "unblock" or cmd.action == "reblock":
@@ -509,6 +511,15 @@ if __name__ == "__main__":
         "--suppress",
         "--suppressed",
         help="Suppress the locked account name.",
+        const=True,
+        nargs="?",
+        default=False,
+    )
+
+    parser.add_argument(
+        "--unhide",
+        "--unsuppress",
+        help="Remove hide/suppress from an account.",
         const=True,
         nargs="?",
         default=False,
