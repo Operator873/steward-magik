@@ -173,10 +173,6 @@ def do_lock(user, cmd):
         if cmd.suppress:
             lock["hidden"] = "suppressed"
 
-    if cmd.unhide:
-        if "hidden" in lock:
-            del lock["hidden"]
-
     # If this is a dryrun, don't actually do it
     if cmd.test:
         print(site)
@@ -527,16 +523,6 @@ if __name__ == "__main__":
         "--suppress",
         "--suppressed",
         help="Suppress the locked account name.",
-        const=True,
-        nargs="?",
-        default=False,
-        metavar="",
-    )
-
-    parser.add_argument(
-        "--unhide",
-        "--unsuppress",
-        help="Remove hide/suppress from an account.",
         const=True,
         nargs="?",
         default=False,
