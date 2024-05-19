@@ -11,12 +11,15 @@ A pure Python (3.6+) script for doing sysopy/stewy things from your computer via
    2. For Windohs systems  
    ```python C:\path\to\stew-magik.py --help```
 
-### >>> Protip
-If you're using a unix-y system, create a soft link into your `/usr/local/bin` directory like this:  
+### >>> Protip2
+1. If you're using a unix-y system, create a soft link into your `/usr/local/bin` directory like this:  
 `sudo ln -s /path/to/stew-magik.py /usr/local/bin/magik`
 
 After that's done, you can skip the tediousness and just use it as a command:  
 `magik block --target Someone --target Someone else --project somewiki --duration forever --reason I'm an asshole`
+
+2. Enclose special characters in double quotes (`"`)
+3. Get into the good habit of enclosing strings with double quotes as well.
 
 ## Usage
 ### Blocks
@@ -30,6 +33,12 @@ After that's done, you can skip the tediousness and just use it as a command:
 
 ### Locks
 ```magik lock --target Snuffy --reason lta```
+
+### Lock and hide
+```magik loc --target Snuffy --reason lta --hide```
+
+### Lock and suppress
+```magik lock --target Snuffy --reason "LTA on rampage" --suppress```
 
 ### Unlocks
 ```magik unlock --target Snuffy --reason Not an lta```
