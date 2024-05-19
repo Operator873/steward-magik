@@ -165,6 +165,7 @@ def do_lock(user, cmd):
         "token": token,
     }
 
+    # Handle hide/suppress actions
     if cmd.action == "lock":
         if cmd.hide:
             lock["hidden"] = "lists"
@@ -182,6 +183,10 @@ def do_lock(user, cmd):
     else:
         data = xmit(site, lock, "post")
 
+        # Debug
+        if cmd.debug:
+            print(json.dumps(data, indent=2))
+        
         # Handle error or success
         if "error" in data:
             print(f"""FAILED! {data["error"]["info"]}""")
@@ -486,6 +491,7 @@ if __name__ == "__main__":
         const=True,
         nargs="?",
         help="Force the block over an existing block.",
+        metavar="",
     )
 
     parser.add_argument(
@@ -503,6 +509,7 @@ if __name__ == "__main__":
         help="Don't actually send anything, just show the query that would be sent.",
         const=True,
         nargs="?",
+        metavar="",
     )
 
     parser.add_argument(
@@ -512,6 +519,7 @@ if __name__ == "__main__":
         const=True,
         nargs="?",
         default=False,
+        metavar="",
     )
 
     parser.add_argument(
@@ -521,6 +529,7 @@ if __name__ == "__main__":
         const=True,
         nargs="?",
         default=False,
+        metavar="",
     )
 
     parser.add_argument(
@@ -530,6 +539,7 @@ if __name__ == "__main__":
         const=True,
         nargs="?",
         default=False,
+        metavar="",
     )
 
     parser.add_argument(
@@ -538,6 +548,7 @@ if __name__ == "__main__":
         const=True,
         nargs="?",
         default=False,
+        metavar="",
     )
 
     args = parser.parse_args()
